@@ -34,7 +34,7 @@ const Home = () => {
   const [backgroundcolor, setBackgroundColor] = useState("#87CEEB");
   const [weatherData, setWeatherData] = useState<WeatherData[]>([
     {
-      id: "current",
+      id: "current1",
       icon: "01d",
       latitude: 0,
       longitude: 0,
