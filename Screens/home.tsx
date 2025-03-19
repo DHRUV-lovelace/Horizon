@@ -1,8 +1,10 @@
+import "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect } from "react";
 import { TextInput, View, StyleSheet, PermissionsAndroid, Platform, TouchableOpacity, Image, Text, ScrollView, RefreshControl, useWindowDimensions, Dimensions } from "react-native";
-import GetLocation from 'react-native-get-location';
+import GetLocation from "react-native-get-location";
 import WeatherSlide from "./WeatherSlides";
+import RainEffect from "./rain";
 
 export type WeatherData = {
   id: string,
@@ -45,6 +47,28 @@ const Home = () => {
       wind:"_ _"
     },
   ]);
+
+  const backgroundColors = {
+  "01d": "#00ABFF", 
+  "02d": "#87CEFA", 
+  "03d": "#B0C4DE", 
+  "04d": "#d6e4ed", 
+  "09d": "#6c8094",
+  "10d": "#f6f1d1",
+  "11d": "#30639c", 
+  "13d": "#f5f7f8", 
+  "50d": "#bdbdbd", 
+  "01n": "#00ABFF", 
+  "02n": "#778899",
+  "03n": "#708090",
+  "04n": "#d6e4ed", 
+  "09n": "#6c8094", 
+  "10n": "#f6f1d1", 
+  "11n": "#30639c",
+  "13n": "#f5f7f8",  
+  "50n": "#bdbdbd",
+  };
+
   console.log("dhruv",weatherData);
 
   useEffect(() => {requestLocationPermission();}, []);
@@ -120,6 +144,10 @@ const Home = () => {
         // console.log('data set');
         console.log(createWeatherObject(data, city, latitude, longitude), "createobject")
         updateWeatherData(createWeatherObject(data, city, latitude, longitude))
+        if(city === "current") {
+          const newBackground = backgroundColors[data.weather[0].icon]
+          setBackgroundColor(newBackground)
+        }
       }
       catch (error) {
         console.error("Error fetching weather data:", error);
@@ -184,6 +212,8 @@ const Home = () => {
       {/* main conatiner containing all other containers*/} 
       <View style={[styles.container, {backgroundColor: `${backgroundcolor}`}]}> 
 
+        {/* <RainEffect element={<Text style={{ fontSize: 30 }}>❄️</Text>} count={20} speed={4000} /> */}
+
         <View style={styles.containercolumn}>
 
           {/* conains the profile image and search bar */}
@@ -209,7 +239,8 @@ const Home = () => {
           <View style={{width: Dimensions.get("screen").width}}>
             <WeatherSlide weatherData={weatherData} setBackground={setBackgroundColor}/>
           </View>
-
+          
+          
         </View>
 
       </View>

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Text, Image, StyleSheet, Dimensions, FlatList } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground} from "react-native";
 
 type weatherProps = {
   weatherData: any,
@@ -56,35 +56,38 @@ const WeatherSlide = ({weatherData, setBackground}: weatherProps) => {
   
   const renderItems = ({ item }) => {
 
-      return (
-        <View style={styles.slide}>
-          <Text style={styles.text}>{item?.id}</Text>
-          <Image source={weatherIcons[item.icon]} style={styles.weatherimage} />
-          <Text style={[styles.text, {marginTop: 20}]}>{item?.description}</Text>
+    return (
+      <View style={{borderRadius: 30}}>
+        <ImageBackground blurRadius={40} style = {styles.blur}>
+          <View style={styles.slide}>
+              <Text style={styles.text}>{item?.id}</Text>
+              <Image source={weatherIcons[item.icon]} style={styles.weatherimage} />
+              <Text style={[styles.text, {marginTop: 20}]}>{item?.description}</Text>
 
-          <View style = {styles.containerrow}>--
-            <Text style={styles.text}>{item?.temp}</Text>
-            <Text style={styles.text2}>°C</Text>
-          </View>
+              <View style = {styles.containerrow}>--
+                <Text style={styles.text}>{item?.temp}</Text>
+                <Text style={styles.text2}>°C</Text>
+              </View>
 
-          <View style = {styles.containerrow}>
-            <Text style={styles.text}>{item?.pressure}</Text>
-            <Text style={styles.text2}>hpa</Text>
-          </View>
+              <View style = {styles.containerrow}>
+                <Text style={styles.text}>{item?.pressure}</Text>
+                <Text style={styles.text2}>hpa</Text>
+              </View>
 
-          <View style = {styles.containerrow}>
-            <View style = {styles.containerrow}>
-              <Text style={styles.text}>{item?.humidity}</Text>
-              <Text style={styles.text2}>%</Text>
-            </View>
-            <View style = {[styles.containerrow, {marginStart: 20}]}>
-              <Text style={styles.text}>{item?.wind}</Text>
-              <Text style={styles.text2}>km/h</Text>
-            </View>
+              <View style = {styles.containerrow}>
+                <View style = {styles.containerrow}>
+                  <Text style={styles.text}>{item?.humidity}</Text>
+                  <Text style={styles.text2}>%</Text>
+                </View>
+                <View style = {[styles.containerrow, {marginStart: 20}]}>
+                  <Text style={styles.text}>{item?.wind}</Text>
+                  <Text style={styles.text2}>km/h</Text>
+                </View>
+              </View>
           </View>
-        </View>
-      );
-    
+        </ImageBackground>
+      </View>
+    );
   };
 
   const onViewableItemsChanged = ({ viewableItems }) => {
@@ -100,7 +103,7 @@ const WeatherSlide = ({weatherData, setBackground}: weatherProps) => {
   return (
 
     <FlatList
-      style={{ alignSelf: "center" }}
+      style={{ alignSelf: "center", marginTop: 80}}
       ref={WeatherSlideref}
       data={weatherData}
       renderItem={renderItems}
@@ -159,14 +162,17 @@ const styles = StyleSheet.create({
       textAlignVertical: 'center'
     },
     slide: {
-      marginTop: 80,
       width: Dimensions.get("window").width * 0.85,
       alignSelf: 'center',
       borderWidth: 8,
       borderRadius: 30,
       borderColor: "white",
       alignItems: "center",
+      marginHorizontal: 2
     },
+    blur: {
+      borderRadius: 40,
+    }
   }
 );
 
