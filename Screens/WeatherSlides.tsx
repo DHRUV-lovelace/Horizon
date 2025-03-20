@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, forwardRef } from "react";
 import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground} from "react-native";
 
 type weatherProps = {
   weatherData: any,
-  setBackground: React.Dispatch<React.SetStateAction<string>>
+  setBackground: React.Dispatch<React.SetStateAction<string>>,
+  ref: React.RefObject<FlatList<any>>
 }
 
 const weatherIcons = {
@@ -48,12 +49,8 @@ const backgroundColors = {
   "50n": "#bdbdbd",
 };
 
-const WeatherSlide = ({weatherData, setBackground}: weatherProps) => {
+const WeatherSlide = ({weatherData, setBackground, ref}: weatherProps) => {
 
-  console.log("gggg",weatherData);
-
-  const WeatherSlideref = useRef(null);
-  
   const renderItems = ({ item }) => {
 
     return (
@@ -64,7 +61,7 @@ const WeatherSlide = ({weatherData, setBackground}: weatherProps) => {
               <Image source={weatherIcons[item.icon]} style={styles.weatherimage} />
               <Text style={[styles.text, {marginTop: 20}]}>{item?.description}</Text>
 
-              <View style = {styles.containerrow}>--
+              <View style = {styles.containerrow}>
                 <Text style={styles.text}>{item?.temp}</Text>
                 <Text style={styles.text2}>°C</Text>
               </View>
@@ -103,8 +100,8 @@ const WeatherSlide = ({weatherData, setBackground}: weatherProps) => {
   return (
 
     <FlatList
-      style={{ alignSelf: "center", marginTop: 80}}
-      ref={WeatherSlideref}
+      style={{ alignSelf: "center", marginTop: 60}}
+      ref={ref}
       data={weatherData}
       renderItem={renderItems}
       keyExtractor={(_item, index) => index.toString()}
@@ -168,7 +165,7 @@ const styles = StyleSheet.create({
       borderRadius: 30,
       borderColor: "white",
       alignItems: "center",
-      marginHorizontal: 2
+      marginHorizontal: 0
     },
     blur: {
       borderRadius: 40,
