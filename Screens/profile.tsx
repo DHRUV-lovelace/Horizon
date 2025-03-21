@@ -11,40 +11,40 @@ export default function Profile() {
   const [age, setAge] = useState("Age");
 
 
-  useEffect(() => {fetchUserData();}, []);
-  
+  useEffect(() => { fetchUserData(); }, []);
+
   const fetchUserData = async () => {
 
     const accessToken = await AsyncStorage.getItem("accessToken")
 
 
     const userData = await fetch('https://dummyjson.com/user/me', {
-                            method: 'GET',
-                            headers: {
-                              'Authorization': `Bearer ${accessToken}`,
-                            },
-                            credentials: 'include'
-                          });
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      credentials: 'include'
+    });
 
     const data = await userData.json();
 
-    if(data !== undefined){
-      try{
-          setEmail((data.email).toString())
-          setName((data.firstName).toString())
-          setAge((data.age).toString())
+    if (data !== undefined) {
+      try {
+        setEmail((data.email).toString())
+        setName((data.firstName).toString())
+        setAge((data.age).toString())
       }
-      catch(error){
-          console.error(error);
+      catch (error) {
+        console.error(error);
       }
-  }
+    }
   };
 
   const saved = () => {
     Navigation.navigate('home')
   }
 
-  const logout = async() => {
+  const logout = async () => {
     await AsyncStorage.multiRemove(["accessToken", "refreshToken"])
     stackclear();
   };
@@ -62,47 +62,47 @@ export default function Profile() {
   return (
     <View style={styles.container}>
 
-      <Image source={require('../assets/images/profile.png')} style={styles.logo}/>
+      <Image source={require('../assets/images/profile.png')} style={styles.logo} />
 
       <View style={styles.textinput}>
         <TextInput
           placeholder='Email'
           placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
+          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
           value={email}
-          />
+        />
       </View>
 
       <View style={styles.textinput}>
         <TextInput
           placeholder='Name'
           placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
+          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
           value={name}
-          />
+        />
       </View>
 
       <View style={styles.textinput}>
         <TextInput
           placeholder='Age'
           placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
+          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
           value={age}
-          />
+        />
       </View>
-      
+
       <View style={styles.containerrow}>
-        <TouchableOpacity style={[styles.button, {backgroundColor: "#17B169"}]} onPress={()=> saved()}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: "#17B169" }]} onPress={() => saved()}>
           <Text style={styles.text}>Save</Text>
         </TouchableOpacity>
 
         <View style={styles.spacer}></View>
 
-        <TouchableOpacity style={[styles.button, {backgroundColor: "#E32636"}]} onPress={()=> logout()}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: "#E32636" }]} onPress={() => logout()}>
           <Text style={styles.text}>Logout</Text>
         </TouchableOpacity>
       </View>
-      
+
     </View>
   )
 }
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
 
   button: {
     width: '35%',
-    height:50,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,

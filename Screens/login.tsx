@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login () {
+export default function Login() {
 
     const Navigation = useNavigation<any>();
 
@@ -15,66 +15,66 @@ export default function Login () {
     const [userName, setUserName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
 
-    useEffect(() => {checkLogin();}, []);
+    useEffect(() => { checkLogin(); }, []);
 
-    const checkLogin = async() => {
+    const checkLogin = async () => {
 
         const accessToken = await AsyncStorage.getItem("accessToken")
         const refreshToken = await AsyncStorage.getItem("refreshToken")
 
         const userData = await fetch('https://dummyjson.com/user/me', {
-                                method: 'GET',
-                                headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                },
-                                credentials: 'include'
-                            });
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            credentials: 'include'
+        });
 
         const data = await userData.json();
 
         if (data !== undefined) {
-            if (data.id){
+            if (data.id) {
                 Navigation.replace('home')
                 return
             }
-            try{
+            try {
                 const response = await fetch('https://dummyjson.com/auth/refresh', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      refreshToken: `${refreshToken}`, 
-                      expiresInMins: 30,
+                        refreshToken: `${refreshToken}`,
+                        expiresInMins: 30,
                     }),
                     credentials: 'include'
-                  })
-        
+                })
+
                 const datanew = await response.json();
                 const accesstokennew = (datanew.accessToken).toString()
-                const refreshtokennew  = (datanew.refreshToken).toString()
+                const refreshtokennew = (datanew.refreshToken).toString()
 
                 await AsyncStorage.setItem("accessToken", accesstokennew)
                 await AsyncStorage.setItem("refreshToken", refreshtokennew)
 
-                if (datanew.accesstoken){
+                if (datanew.accesstoken) {
                     loginToast(true);
                     homeNav();
                 }
             }
-            catch(error){
+            catch (error) {
                 console.log(error)
             }
         }
     }
 
     const loginUser = async () => {
-        
+
         const response = await fetch('https://dummyjson.com/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              username: (userName).toLowerCase(),
-              password: (password).toLowerCase(),
-              expiresInMins: 30,
+                username: (userName).toLowerCase(),
+                password: (password).toLowerCase(),
+                expiresInMins: 30,
             }),
             credentials: 'include'
         });
@@ -84,29 +84,29 @@ export default function Login () {
         const accesstoken = (data.accessToken).toString()
         const refreshtoken = (data.refreshToken).toString()
 
-        if(data.accessToken !== undefined){
-            try{
+        if (data.accessToken !== undefined) {
+            try {
                 await AsyncStorage.setItem('accessToken', accesstoken);
             }
-            catch(error){
+            catch (error) {
                 console.error(error);
             }
         }
 
-        if(data.refreshToken !== undefined){
-            try{
+        if (data.refreshToken !== undefined) {
+            try {
                 await AsyncStorage.setItem('refreshToken', refreshtoken);
             }
-            catch(error){
+            catch (error) {
                 console.error(error);
             }
         }
 
-        if(data.accessToken !== undefined){
+        if (data.accessToken !== undefined) {
             loginToast(true);
             homeNav();
         }
-        else if(data === Object){
+        else if (data === Object) {
             loginToast(false);
         }
     };
@@ -116,19 +116,19 @@ export default function Login () {
     };
 
     const loginToast = (code: boolean) => {
-        if(code === true){
+        if (code === true) {
             Toast.show({
                 type: "success",
                 text1: "login success",
             });
         }
-        else if(code === false){
+        else if (code === false) {
             Toast.show({
                 type: "error",
                 text1: "Login failed",
             });
         }
-        else{
+        else {
             Toast.show({
                 type: "error",
                 text1: "Please Login",
@@ -137,46 +137,46 @@ export default function Login () {
     };
 
     const changeFocus = () => {
-        if (passwordRef.current){
+        if (passwordRef.current) {
             passwordRef.current.focus();
         }
     };
 
     return (
-      <View style = {styles.container}>
+        <View style={styles.container}>
 
-        <Image source={require('../assets/images/logo.png')} style={styles.logo}/>
+            <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
-        <Text style = {styles.title}>Horizon</Text>
+            <Text style={styles.title}>Horizon</Text>
 
-        <View style = {styles.textinput}>
-            <TextInput
-                placeholder='Enter username'
-                placeholderTextColor={'black'}
-                style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
-                value={userName}
-                onChangeText={(text) => setUserName(text)}
-                onSubmitEditing={changeFocus}
+            <View style={styles.textinput}>
+                <TextInput
+                    placeholder='Enter username'
+                    placeholderTextColor={'black'}
+                    style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+                    value={userName}
+                    onChangeText={(text) => setUserName(text)}
+                    onSubmitEditing={changeFocus}
                 />
-        </View>
+            </View>
 
-        <View style = {styles.textinput}>
-            <TextInput
-                ref={passwordRef}
-                placeholder='Enter password'
-                placeholderTextColor={'black'}
-                style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
-                value={password}
-                onChangeText={(text) => setPassword(text)}
+            <View style={styles.textinput}>
+                <TextInput
+                    ref={passwordRef}
+                    placeholder='Enter password'
+                    placeholderTextColor={'black'}
+                    style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+                    value={password}
+                    onChangeText={(text) => setPassword(text)}
                 />
-        </View>
-        
-        <TouchableOpacity style= {styles.login} onPress = {loginUser}>
-            <Text style = {{color: 'black', fontSize: 25}}>Login</Text>
-        </TouchableOpacity>
-        <Toast/>
+            </View>
 
-      </View>
+            <TouchableOpacity style={styles.login} onPress={loginUser}>
+                <Text style={{ color: 'black', fontSize: 25 }}>Login</Text>
+            </TouchableOpacity>
+            <Toast />
+
+        </View>
     )
 };
 
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
 
     login: {
         width: '35%',
-        height:60,
+        height: 60,
         backgroundColor: '#F1BC19',
         alignItems: 'center',
         justifyContent: 'center',
