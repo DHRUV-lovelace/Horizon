@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './Screens/login';
 import Profile from './Screens/profile';
 import Home from './Screens/home';
-import { StatusBar } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 

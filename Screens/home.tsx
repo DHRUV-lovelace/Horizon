@@ -1,13 +1,12 @@
 import "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import { Dimensions, Image, Modal, PermissionsAndroid, Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import GetLocation from "react-native-get-location";
 import WeatherSlide from "./WeatherSlides";
 import RainEffect from "./rain";
 import Suggestions from "./sugggestions";
 import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
-import { rgbaColor } from "react-native-reanimated/lib/typescript/Colors";
 
 export type WeatherData = {
   id: string,
@@ -22,6 +21,13 @@ export type WeatherData = {
   filter: string
 };
 
+type locationData = {
+  name: string,
+  temp: string
+}
+
+type backgroundColors = Record<string, string>;
+
 const Home = () => {
 
   const API_KEY = "944e56c6401479371c1e394a4f0a1ecd";
@@ -35,6 +41,7 @@ const Home = () => {
   const [backgroundcolor, setBackgroundColor] = useState("#87CEEB");
   const weatherSliderRef = useRef<FlatList<any>>(null);
   const [visible, setVisible] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("Today");
   const show = () => setVisible(true)
   const hide = () => setVisible(false)
   const [weatherData, setWeatherData] = useState<WeatherData[]>([
@@ -51,8 +58,30 @@ const Home = () => {
       filter: "Today"
     },
   ]);
+  const [locationData, setLocationData] = useState<locationData[]>([
+    {
+      name: "Delhi",
+      temp: "_ _",
+    },
+    {
+      name: "Mumbai",
+      temp: "_ _",
+    },
+    {
+      name: "Kerala",
+      temp: "_ _",
+    },
+    {
+      name: "Haryana",
+      temp: "_ _",
+    },
+    {
+      name: "Karnataka",
+      temp: "_ _",
+    },
+  ]);
 
-  const backgroundColors = {
+  const backgroundColors: backgroundColors = {
     "01d": "#00ABFF",
     "02d": "#87CEFA",
     "03d": "#B0C4DE",
@@ -165,6 +194,7 @@ const Home = () => {
         }
       }
     }
+    return -1
   }
 
   const fetchWeatherData = async (city: string, latitude: number, longitude: number, filter: string, scroll?: boolean) => {
@@ -235,6 +265,15 @@ const Home = () => {
     setWeatherData((prevData) =>
       prevData && prevData.some((item) => item.id === data.id) ? prevData.map((item) => (item.id === data.id ? data : item)) : [...prevData, data]
     );
+
+    const summarydata: locationData = {
+      name: data.id,
+      temp: data.temp
+    };
+
+    setLocationData((prevData) =>
+      prevData && prevData.some((item) => item.name === summarydata.name) ? prevData.map((item) => (item.name === summarydata.name ? summarydata : item)) : [...prevData, summarydata]
+    );
     if (scroll === true) {
       scrollTo(data.id)
     }
@@ -297,6 +336,7 @@ const Home = () => {
 
   const applyfilter = async (filter: string) => {
     if (filter === "Today") {
+      setSelectedFilter(filter)
       hide()
       await Promise.all(
         weatherData.map(async (item) => {
@@ -305,6 +345,7 @@ const Home = () => {
       );
     }
     else if (filter === "Tomorrow") {
+      setSelectedFilter(filter)
       hide()
       await Promise.all(
         weatherData.map(async (item) => {
@@ -313,6 +354,7 @@ const Home = () => {
       );
     }
     else if (filter === "Day 2") {
+      setSelectedFilter(filter)
       hide()
       await Promise.all(
         weatherData.map(async (item) => {
@@ -321,6 +363,7 @@ const Home = () => {
       );
     }
     else if (filter === "Day 3") {
+      setSelectedFilter(filter)
       hide()
       await Promise.all(
         weatherData.map(async (item) => {
@@ -338,7 +381,7 @@ const Home = () => {
       {/* main conatiner containing all other containers*/}
       <View style={[styles.container, { backgroundColor: `${backgroundcolor}` }]}>
 
-        {/* <RainEffect element={<Text style={{ fontSize: 15 }}>❄️</Text>} count={10} speed={6000} angle={3}/> */}
+        {/* <RainEffect element={<Text style={{ fontSize: 15 }}>🍆💦</Text>} count={10} speed={6000} angle={3}/> */}
 
         <View style={styles.containercolumn}>
 
@@ -367,26 +410,26 @@ const Home = () => {
 
           <Modal visible={visible} animationType='fade' onRequestClose={hide} transparent>
             <View style={styles.modal}>
-              <TouchableOpacity style={styles.button} onPress={() => applyfilter("Today")}>
-                <Text style={styles.modalText}>Today</Text>
+              <TouchableOpacity style={[styles.button, selectedFilter === "Today" && styles.selectedButton]} onPress={() => applyfilter("Today")}>
+                <Text style={[styles.modalText, selectedFilter === "Today" && styles.selectedText]}>Today</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => applyfilter("Tomorrow")}>
-                <Text style={styles.modalText}>Tomorrow</Text>
+              <TouchableOpacity style={[styles.button, selectedFilter === "Tomorrow" && styles.selectedButton]} onPress={() => applyfilter("Tomorrow")}>
+                <Text style={[styles.modalText, selectedFilter === "Tomorrow" && styles.selectedText]}>Tomorrow</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => applyfilter("Day 2")}>
-                <Text style={styles.modalText}>Day 2</Text>
+              <TouchableOpacity style={[styles.button, selectedFilter === "Day 2" && styles.selectedButton]} onPress={() => applyfilter("Day 2")}>
+                <Text style={[styles.modalText, selectedFilter === "Day 2" && styles.selectedText]}>Day 2</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{ height: 50, justifyContent: 'center' }} onPress={() => applyfilter("Day 3")}>
-                <Text style={styles.modalText}>Day 3</Text>
+              <TouchableOpacity style={[styles.button, selectedFilter === "Day 3" && styles.selectedButton, { height: 50, justifyContent: 'center' }]} onPress={() => applyfilter("Day 3")}>
+                <Text style={[styles.modalText, selectedFilter === "Day 3" && styles.selectedText]}>Day 3</Text>
               </TouchableOpacity>
             </View>
           </Modal>
 
           <View style={{ width: Dimensions.get("screen").width }}>
-            <WeatherSlide weatherData={weatherData} setBackground={setBackgroundColor} ref={weatherSliderRef} />
+            <WeatherSlide weatherData={weatherData} setBackground={setBackgroundColor} backgroundColors={backgroundColors} ref={weatherSliderRef} />
           </View>
 
-          <Suggestions weatherData={weatherData} fetchCityData={fetchCityData} ref={weatherSliderRef} />
+          <Suggestions weatherData={weatherData} fetchCityData={fetchCityData} locationData={locationData} setLocationData={setLocationData} ref={weatherSliderRef} />
 
         </View>
 
@@ -442,8 +485,23 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     borderBottomWidth: 0.5,
-    borderBottomColor: "grey"
+    borderBottomColor: "grey",
+    borderRadius: 10
   },
+    selectedButton: {
+      height: 50,
+      justifyContent: 'center',
+      borderBottomWidth: 0.5,
+      borderBottomColor: "grey",
+      backgroundColor: "#229ac8",
+      borderRadius: 20
+    },
+    selectedText: {
+      fontSize: 22,
+      marginStart: 10,
+      color: 'white',
+      elevation: 10
+    },
   modal: {
     backgroundColor: "#ffffff",
     width: 170,

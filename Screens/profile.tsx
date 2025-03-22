@@ -2,6 +2,7 @@ import { Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, 
 import React, { useEffect, useState } from 'react'
 import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 export default function Profile() {
 
@@ -9,14 +10,15 @@ export default function Profile() {
   const [email, setEmail] = useState("Email");
   const [name, setName] = useState("Name");
   const [age, setAge] = useState("Age");
-
+  const [emailu, setEmailu] = useState("Email");
+  const [nameu, setNameu] = useState("Name");
+  const [ageu, setAgeu] = useState("Age");
 
   useEffect(() => { fetchUserData(); }, []);
 
   const fetchUserData = async () => {
 
     const accessToken = await AsyncStorage.getItem("accessToken")
-
 
     const userData = await fetch('https://dummyjson.com/user/me', {
       method: 'GET',
@@ -29,19 +31,52 @@ export default function Profile() {
     const data = await userData.json();
 
     if (data !== undefined) {
+      console.log(data, "dummy")
       try {
         setEmail((data.email).toString())
         setName((data.firstName).toString())
         setAge((data.age).toString())
       }
       catch (error) {
-        console.error(error);
+        console.error(error, "failed");
       }
     }
   };
 
-  const saved = () => {
-    Navigation.navigate('home')
+  const saved = async() => {
+    try{
+      const response = await fetch('https://dummyjson.com/users/1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          firstName: name,
+          age: age
+        })
+      });
+  
+      const data = await response.json()
+  
+      setEmailu(data.email)
+      setNameu(data.firstName)
+      setAgeu((data.age).toString())
+
+      setEmail("")
+      setName("")
+      setAge("")
+  
+      Toast.show({
+        type: "success",
+        text1: "Updated successfully",
+      });
+    }
+    catch (error){
+      console.error("error occured while fetching updated data")
+      Toast.show({
+        type: "error",
+        text1: "updation failed"
+      });
+    }
   }
 
   const logout = async () => {
@@ -63,31 +98,34 @@ export default function Profile() {
     <View style={styles.container}>
 
       <Image source={require('../assets/images/profile.png')} style={styles.logo} />
-
+      <Toast />
       <View style={styles.textinput}>
         <TextInput
-          placeholder='Email'
+          placeholder={emailu}
           placeholderTextColor='black'
-          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+          style={{ height: '100%', fontSize: 18, paddingLeft: 25}}
           value={email}
+          onChangeText={(text)=> setEmail(text)}
         />
       </View>
 
       <View style={styles.textinput}>
         <TextInput
-          placeholder='Name'
+          placeholder= {nameu}
           placeholderTextColor='black'
           style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
           value={name}
+          onChangeText={(text)=> setName(text)}
         />
       </View>
 
       <View style={styles.textinput}>
         <TextInput
-          placeholder='Age'
+          placeholder={ageu}
           placeholderTextColor='black'
           style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
           value={age}
+          onChangeText={(text)=> setAge(text)}
         />
       </View>
 

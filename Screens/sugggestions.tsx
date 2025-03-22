@@ -1,44 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
-import WeatherSlide from "./WeatherSlides";
+
+type locationData = {
+    name: string,
+    temp: string
+  }
 
 type sugggestionsProps = {
     weatherData: any,
     fetchCityData: React.Dispatch<string>
     ref: React.RefObject<FlatList<any>>
+    locationData: locationData[]
+    setLocationData: React.Dispatch<React.SetStateAction<Array<locationData>>>
 }
 
-type locationData = {
-    name: string,
-    temp: string
-}
-
-const Suggestions = ({ weatherData, fetchCityData, ref }: sugggestionsProps) => {
+const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData, ref }: sugggestionsProps) => {
 
     const API_KEY = "944e56c6401479371c1e394a4f0a1ecd";
-
-    const [locationData, setLocationData] = useState<locationData[]>([
-        {
-            name: "Delhi",
-            temp: "_ _",
-        },
-        {
-            name: "Mumbai",
-            temp: "_ _",
-        },
-        {
-            name: "Kerala",
-            temp: "_ _",
-        },
-        {
-            name: "Haryana",
-            temp: "_ _",
-        },
-        {
-            name: "Karnataka",
-            temp: "_ _",
-        },
-    ]);
 
     useEffect(() => { fetchAllWeatherData(); }, []);
 

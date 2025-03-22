@@ -1,13 +1,17 @@
-import React, { useRef, forwardRef } from "react";
-import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground } from "react-native";
+import React from "react";
+import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground, ImageSourcePropType } from "react-native";
+import { ReanimatedFlatList } from "react-native-reanimated/lib/typescript/component/FlatList";
 
 type weatherProps = {
   weatherData: any,
   setBackground: React.Dispatch<React.SetStateAction<string>>,
-  ref: React.RefObject<FlatList<any>>
+  backgroundColors: Record<string, string>,
+  ref: React.RefObject<ReanimatedFlatList<any>>
 }
 
-const weatherIcons = {
+type weatherIcons = Record<string, ImageSourcePropType>
+
+const weatherIcons: weatherIcons = {
   "01d": require("../assets/images/01d.png"),
   "02d": require("../assets/images/02d.png"),
   "03d": require("../assets/images/03d.png"),
@@ -28,28 +32,7 @@ const weatherIcons = {
   "50n": require("../assets/images/50n.png"),
 };
 
-const backgroundColors = {
-  "01d": "#00ABFF",
-  "02d": "#87CEFA",
-  "03d": "#B0C4DE",
-  "04d": "#d6e4ed",
-  "09d": "#6c8094",
-  "10d": "#f6f1d1",
-  "11d": "#30639c",
-  "13d": "#f5f7f8",
-  "50d": "#bdbdbd",
-  "01n": "#00ABFF",
-  "02n": "#778899",
-  "03n": "#708090",
-  "04n": "#d6e4ed",
-  "09n": "#6c8094",
-  "10n": "#f6f1d1",
-  "11n": "#30639c",
-  "13n": "#f5f7f8",
-  "50n": "#bdbdbd",
-};
-
-const WeatherSlide = ({ weatherData, setBackground, ref }: weatherProps) => {
+const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: weatherProps) => {
 
   const renderItems = ({ item }) => {
 

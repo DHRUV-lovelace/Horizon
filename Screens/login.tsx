@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image } from 'react-native'
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -14,6 +14,12 @@ export default function Login() {
 
     const [userName, setUserName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [passwordShow, setPasswordShow] = useState(false);
+
+    const passwordIcon = {
+        false: require("../assets/images/visible.png"),
+        true: require("../assets/images/hide.png")
+    }
 
     useEffect(() => { checkLogin(); }, []);
 
@@ -142,8 +148,20 @@ export default function Login() {
         }
     };
 
+    const togglePassword = () => {
+        if (passwordShow){
+            setPasswordShow(false)
+        }
+        else{
+            setPasswordShow(true)
+        }
+    };
+
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior='padding' keyboardVerticalOffset={20}>
+            <ScrollView style={{flex: 1}} contentContainerStyle={{alignItems: 'center'}}>
+
+            <Toast />
 
             <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
@@ -153,30 +171,36 @@ export default function Login() {
                 <TextInput
                     placeholder='Enter username'
                     placeholderTextColor={'black'}
-                    style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+                    style={{ height: '100%', fontSize: 18, paddingLeft: 25, paddingRight: 25}}
                     value={userName}
                     onChangeText={(text) => setUserName(text)}
                     onSubmitEditing={changeFocus}
+                    autoFocus={false}
+                    maxLength={6}
                 />
             </View>
 
-            <View style={styles.textinput}>
+            <View style={[styles.textinput, {flexDirection: 'row'}]}>
                 <TextInput
                     ref={passwordRef}
                     placeholder='Enter password'
                     placeholderTextColor={'black'}
-                    style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+                    style={{ width: "86%", height: '100%', fontSize: 18, paddingLeft: 25, color: "#000000", paddingRight: 25}}
                     value={password}
                     onChangeText={(text) => setPassword(text)}
+                    maxLength={10}
+                    secureTextEntry={passwordShow}
                 />
+                <TouchableOpacity style={{width: 40, height: 40, alignSelf: 'center', justifyContent: 'center'}} onPress={()=>{togglePassword()}}>
+                    <Image source={passwordIcon[passwordShow]} style={{width: 30, height:30, alignSelf: 'center'}}/>
+                </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.login} onPress={loginUser}>
                 <Text style={{ color: 'black', fontSize: 25 }}>Login</Text>
             </TouchableOpacity>
-            <Toast />
-
-        </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     )
 };
 
@@ -186,7 +210,6 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         backgroundColor: '#888AB9',
-        alignItems: 'center',
     },
 
     logo: {
@@ -210,12 +233,12 @@ const styles = StyleSheet.create({
     },
 
     textinput: {
+        flexDirection: 'column',
         width: '88%',
         height: 55,
         marginTop: 60,
         backgroundColor: 'white',
         borderRadius: 25,
-        justifyContent: 'center',
     },
 
     login: {
