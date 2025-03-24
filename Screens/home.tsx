@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef, useId } from "react";
 import { Dimensions, Image, Modal, PermissionsAndroid, Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import GetLocation from "react-native-get-location";
 import WeatherSlide from "./WeatherSlides";
-import RainEffect from "./rain";
-import Suggestions from "./sugggestions";
+import Suggestions from "./suggestions";
 import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
+import Toast from "react-native-toast-message";
 
 export type WeatherData = {
   id: string,
@@ -294,7 +294,7 @@ const Home = () => {
     try {
       const response = await fetch(city_url);
       const data = await response.json();
-      console.log(data);
+      console.log(data, "location");
 
       if (data.length > 0) {
         const lat = data[0].lat;
@@ -303,6 +303,13 @@ const Home = () => {
         setLongitude(data[0].lon);
 
         fetchWeatherData(city, lat, lon, "Today", true);
+      }
+      else{
+        Toast.show({
+          type: "error",
+          text1: "Enter a valid location name" 
+        })
+        return
       }
     }
     catch (error) {
@@ -376,12 +383,10 @@ const Home = () => {
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
 
       {/* main conatiner containing all other containers*/}
       <View style={[styles.container, { backgroundColor: `${backgroundcolor}` }]}>
-
-        {/* <RainEffect element={<Text style={{ fontSize: 15 }}>🍆💦</Text>} count={10} speed={6000} angle={3}/> */}
 
         <View style={styles.containercolumn}>
 
@@ -409,23 +414,30 @@ const Home = () => {
           </View>
 
           <Modal visible={visible} animationType='fade' onRequestClose={hide} transparent>
-            <View style={styles.modal}>
-              <TouchableOpacity style={[styles.button, selectedFilter === "Today" && styles.selectedButton]} onPress={() => applyfilter("Today")}>
-                <Text style={[styles.modalText, selectedFilter === "Today" && styles.selectedText]}>Today</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, selectedFilter === "Tomorrow" && styles.selectedButton]} onPress={() => applyfilter("Tomorrow")}>
-                <Text style={[styles.modalText, selectedFilter === "Tomorrow" && styles.selectedText]}>Tomorrow</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, selectedFilter === "Day 2" && styles.selectedButton]} onPress={() => applyfilter("Day 2")}>
-                <Text style={[styles.modalText, selectedFilter === "Day 2" && styles.selectedText]}>Day 2</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, selectedFilter === "Day 3" && styles.selectedButton, { height: 50, justifyContent: 'center' }]} onPress={() => applyfilter("Day 3")}>
-                <Text style={[styles.modalText, selectedFilter === "Day 3" && styles.selectedText]}>Day 3</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={{flex: 1}} activeOpacity={1} onPressOut={() => hide()}>
+              <View style={styles.modal}>
+                <TouchableOpacity style={[styles.button, selectedFilter === "Today" && styles.selectedButton]} onPress={() => applyfilter("Today")}>
+                  <Text style={[styles.modalText, selectedFilter === "Today" && styles.selectedText]}>Today</Text>
+                </TouchableOpacity>
+                <View style={styles.lines}></View>
+                <TouchableOpacity style={[styles.button, selectedFilter === "Tomorrow" && styles.selectedButton]} onPress={() => applyfilter("Tomorrow")}>
+                  <Text style={[styles.modalText, selectedFilter === "Tomorrow" && styles.selectedText]}>Tomorrow</Text>
+                </TouchableOpacity>
+                <View style={styles.lines}></View>
+                <TouchableOpacity style={[styles.button, selectedFilter === "Day 2" && styles.selectedButton]} onPress={() => applyfilter("Day 2")}>
+                  <Text style={[styles.modalText, selectedFilter === "Day 2" && styles.selectedText]}>Day 2</Text>
+                </TouchableOpacity>
+                <View style={styles.lines}></View>
+                <TouchableOpacity style={[styles.button, selectedFilter === "Day 3" && styles.selectedButton, { height: 50, justifyContent: 'center' }]} onPress={() => applyfilter("Day 3")}>
+                  <Text style={[styles.modalText, selectedFilter === "Day 3" && styles.selectedText]}>Day 3</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
           </Modal>
+          
+          <Text style={{color: "#ffffff", fontSize: 35, alignSelf: 'center', fontWeight: '400', marginTop: 7}}>{selectedFilter}</Text>
 
-          <View style={{ width: Dimensions.get("screen").width }}>
+          <View style={{ width: Dimensions.get("screen").width, marginTop: 10}}>
             <WeatherSlide weatherData={weatherData} setBackground={setBackgroundColor} backgroundColors={backgroundColors} ref={weatherSliderRef} />
           </View>
 
@@ -434,7 +446,7 @@ const Home = () => {
         </View>
 
       </View>
-
+      <Toast/>
     </ScrollView>
   );
 };
@@ -484,11 +496,11 @@ const styles = StyleSheet.create({
   button: {
     height: 50,
     justifyContent: 'center',
-    borderBottomWidth: 0.5,
-    borderBottomColor: "grey",
-    borderRadius: 10
+    borderRadius: 10,
+    margin: 5
   },
     selectedButton: {
+      width: 160,
       height: 50,
       justifyContent: 'center',
       borderBottomWidth: 0.5,
@@ -505,6 +517,7 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: "#ffffff",
     width: 170,
+    height: 240,
     alignSelf: 'flex-end',
     marginEnd: 25,
     borderRadius: 20,
@@ -514,6 +527,12 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginStart: 10
   },
+  lines: {
+    marginStart: 8,
+    marginEnd: 8,
+    borderWidth: 0.18,
+    borderColor: 'grey'
+  }
 });
 
 export default Home;

@@ -1,4 +1,4 @@
-import { Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
@@ -44,19 +44,46 @@ export default function Profile() {
   };
 
   const saved = async() => {
+
+    let tempEmail;
+    let tempName;
+    let tempAge;
+
+    if(email === ""){
+      tempEmail = " "
+      setEmail(" ")
+    }
+    else{
+      tempEmail = email
+    }
+    if(name === ""){
+      tempName = " "
+      setName(" ")
+    }
+    else{
+      tempName = name
+    }
+    if(age === ""){
+      tempAge = " "
+      setAge(" ")
+    }
+    else{
+      tempAge = age
+    }
+
     try{
       const response = await fetch('https://dummyjson.com/users/1', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: email,
-          firstName: name,
-          age: age
+          email: tempEmail,
+          firstName: tempName,
+          age: tempAge
         })
       });
   
       const data = await response.json()
-  
+      console.log(data, "userdata")
       setEmailu(data.email)
       setNameu(data.firstName)
       setAgeu((data.age).toString())
@@ -80,8 +107,7 @@ export default function Profile() {
   }
 
   const logout = async () => {
-    await AsyncStorage.multiRemove(["accessToken", "refreshToken"])
-    stackclear();
+    Alert.alert('Logout', 'you sure to logout?', [{text: 'No', style: 'cancel'}, {text: 'Yes', onPress: async() => {await AsyncStorage.multiRemove(["accessToken", "refreshToken"]); stackclear();}}])
   };
 
   const stackclear = () => {
@@ -95,53 +121,54 @@ export default function Profile() {
 
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{flex: 1, backgroundColor: '#888AB9',}} behavior='padding' keyboardVerticalOffset={50}>
+      <ScrollView style={[styles.container]} contentContainerStyle={{alignItems: 'center'}}>
+        <Image source={require('../assets/images/profile.png')} style={styles.logo} />
+        <Toast />
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder={emailu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25}}
+            value={email}
+            onChangeText={(text)=> setEmail(text)}
+          />
+        </View>
 
-      <Image source={require('../assets/images/profile.png')} style={styles.logo} />
-      <Toast />
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder={emailu}
-          placeholderTextColor='black'
-          style={{ height: '100%', fontSize: 18, paddingLeft: 25}}
-          value={email}
-          onChangeText={(text)=> setEmail(text)}
-        />
-      </View>
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder= {nameu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+            value={name}
+            onChangeText={(text)=> setName(text)}
+          />
+        </View>
 
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder= {nameu}
-          placeholderTextColor='black'
-          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
-          value={name}
-          onChangeText={(text)=> setName(text)}
-        />
-      </View>
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder={ageu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+            value={age}
+            onChangeText={(text)=> setAge(text)}
+          />
+        </View>
 
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder={ageu}
-          placeholderTextColor='black'
-          style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
-          value={age}
-          onChangeText={(text)=> setAge(text)}
-        />
-      </View>
+        <View style={[styles.containerrow, {marginTop: 100}]}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: "#17B169" }]} onPress={() => saved()}>
+            <Text style={styles.text}>Save</Text>
+          </TouchableOpacity>
 
-      <View style={styles.containerrow}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: "#17B169" }]} onPress={() => saved()}>
-          <Text style={styles.text}>Save</Text>
-        </TouchableOpacity>
+          <View style={styles.spacer}></View>
 
-        <View style={styles.spacer}></View>
+          <TouchableOpacity style={[styles.button, { backgroundColor: "#E32636" }]} onPress={() => logout()}>
+            <Text style={styles.text}>Logout</Text>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: "#E32636" }]} onPress={() => logout()}>
-          <Text style={styles.text}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -150,8 +177,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#888AB9',
-    alignItems: 'center',
   },
 
   containerrow: {
@@ -190,13 +215,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,
-    marginTop: 100,
-    elevation: 30
   },
 
   text: {
     color: "black",
     fontSize: 20,
     letterSpacing: 2
+  },
+  modal: {
+    width: '50%',
+    height: 100,
+    backgroundColor: "#000000"
   }
 });

@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView } from 'react-native'
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Pressable, ActivityIndicator } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -7,8 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Login() {
 
     const Navigation = useNavigation<any>();
-
-    Navigation.clear
 
     const passwordRef = useRef<TextInput>(null);
 
@@ -74,6 +72,11 @@ export default function Login() {
 
     const loginUser = async () => {
 
+        if (userName === "" || password === ""){
+            loginToast();
+            return
+        }
+
         const response = await fetch('https://dummyjson.com/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -86,6 +89,12 @@ export default function Login() {
         });
 
         const data = await response.json();
+        console.log(data, "logindata")
+
+        if (data.message){
+            loginToast(false)
+            return
+        }
 
         const accesstoken = (data.accessToken).toString()
         const refreshtoken = (data.refreshToken).toString()
@@ -121,7 +130,7 @@ export default function Login() {
         Navigation.replace('home');
     };
 
-    const loginToast = (code: boolean) => {
+    const loginToast = (code?: boolean) => {
         if (code === true) {
             Toast.show({
                 type: "success",
@@ -131,13 +140,13 @@ export default function Login() {
         else if (code === false) {
             Toast.show({
                 type: "error",
-                text1: "Login failed",
+                text1: "Incorrect username or password",
             });
         }
         else {
             Toast.show({
                 type: "error",
-                text1: "Please Login",
+                text1: "Please provide an input",
             });
         }
     };
@@ -159,46 +168,50 @@ export default function Login() {
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior='padding' keyboardVerticalOffset={20}>
+            
             <ScrollView style={{flex: 1}} contentContainerStyle={{alignItems: 'center'}}>
 
-            <Toast />
+                <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
-            <Image source={require('../assets/images/logo.png')} style={styles.logo} />
+                <Toast />
+                <Text style={styles.title}>Horizon</Text>
+                <View style={styles.textinput}>
+                    <TextInput
+                        placeholder='Enter username'
+                        placeholderTextColor={'black'}
+                        style={{ height: '100%', fontSize: 18, paddingLeft: 25, paddingRight: 25}}
+                        value={userName}
+                        onChangeText={(text) => setUserName(text)}
+                        onSubmitEditing={changeFocus}
+                        autoFocus={false}
+                        maxLength={6}
+                    />
+                </View>
 
-            <Text style={styles.title}>Horizon</Text>
+                <View style={[styles.textinput, {flexDirection: 'row'}]}>
+                    <TextInput
+                        ref={passwordRef}
+                        placeholder='Enter password'
+                        placeholderTextColor={'black'}
+                        style={{ width: "86%", height: '100%', fontSize: 18, paddingLeft: 25, color: "#000000", paddingRight: 25}}
+                        value={password}
+                        onChangeText={(text) => setPassword(text)}
+                        maxLength={10}
+                        secureTextEntry={passwordShow}
+                    />
+                    <TouchableOpacity style={{width: 40, height: 40, alignSelf: 'center', justifyContent: 'center'}} onPress={()=>{togglePassword()}}>
+                        <Image source={passwordIcon[passwordShow]} style={{width: 30, height:30, alignSelf: 'center'}} />
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.textinput}>
-                <TextInput
-                    placeholder='Enter username'
-                    placeholderTextColor={'black'}
-                    style={{ height: '100%', fontSize: 18, paddingLeft: 25, paddingRight: 25}}
-                    value={userName}
-                    onChangeText={(text) => setUserName(text)}
-                    onSubmitEditing={changeFocus}
-                    autoFocus={false}
-                    maxLength={6}
-                />
-            </View>
+                <View style={{flexDirection: 'row', marginTop: 100, borderRadius: 0}}>
+                    <View style={styles.loginView}>
+                        <Pressable style={styles.login}  onPress={loginUser} android_ripple={{color: "#f3e3f3"}}>
+                            <Text style={{ color: 'black', fontSize: 25}}>Login</Text>
+                        </Pressable>
+                    </View> 
+                </View>
 
-            <View style={[styles.textinput, {flexDirection: 'row'}]}>
-                <TextInput
-                    ref={passwordRef}
-                    placeholder='Enter password'
-                    placeholderTextColor={'black'}
-                    style={{ width: "86%", height: '100%', fontSize: 18, paddingLeft: 25, color: "#000000", paddingRight: 25}}
-                    value={password}
-                    onChangeText={(text) => setPassword(text)}
-                    maxLength={10}
-                    secureTextEntry={passwordShow}
-                />
-                <TouchableOpacity style={{width: 40, height: 40, alignSelf: 'center', justifyContent: 'center'}} onPress={()=>{togglePassword()}}>
-                    <Image source={passwordIcon[passwordShow]} style={{width: 30, height:30, alignSelf: 'center'}}/>
-                </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.login} onPress={loginUser}>
-                <Text style={{ color: 'black', fontSize: 25 }}>Login</Text>
-            </TouchableOpacity>
             </ScrollView>
         </KeyboardAvoidingView>
     )
@@ -242,13 +255,16 @@ const styles = StyleSheet.create({
     },
 
     login: {
-        width: '35%',
+        width: 120,
         height: 60,
         backgroundColor: '#F1BC19',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 25,
-        marginTop: 100,
-        elevation: 25
+    },
+    loginView: {
+        overflow: 'hidden',
+        elevation: 25,
+        borderRadius: 25
     }
 });

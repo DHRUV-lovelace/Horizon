@@ -38,7 +38,7 @@ const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: wea
 
     return (
       <View style={{ borderRadius: 30 }}>
-        <ImageBackground blurRadius={40} style={styles.blur}>
+        <ImageBackground blurRadius={40}>
           <View style={styles.slide}>
             <Text style={styles.text}>{item?.id}</Text>
             <Image source={weatherIcons[item.icon]} style={styles.weatherimage} />
@@ -83,7 +83,7 @@ const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: wea
   return (
 
     <FlatList
-      style={{ alignSelf: "center", marginTop: 60 }}
+      style={{ alignSelf: "center"}}
       ref={ref}
       data={weatherData}
       renderItem={renderItems}
