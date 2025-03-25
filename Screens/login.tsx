@@ -1,8 +1,8 @@
-import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Pressable, ActivityIndicator } from 'react-native'
+import { Text, StyleSheet, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Pressable, ImageSourcePropType } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
-import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native'
+import Toast from 'react-native-toast-message'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function Login() {
 
@@ -13,10 +13,11 @@ export default function Login() {
     const [userName, setUserName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [passwordShow, setPasswordShow] = useState(false);
+    const [icon, setIcon] = useState(0)
 
-    const passwordIcon = {
-        false: require("../assets/images/visible.png"),
-        true: require("../assets/images/hide.png")
+    const passwordIcon: Record<number, ImageSourcePropType> = {
+        0: require("../assets/images/visible.png"),
+        1: require("../assets/images/hide.png")
     }
 
     useEffect(() => { checkLogin(); }, []);
@@ -26,7 +27,7 @@ export default function Login() {
         const accessToken = await AsyncStorage.getItem("accessToken")
         const refreshToken = await AsyncStorage.getItem("refreshToken")
 
-        const userData = await fetch('https://dummyjson.com/user/me', {
+        const userData = await fetch(`${process.env.currentAuthURL}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -42,7 +43,7 @@ export default function Login() {
                 return
             }
             try {
-                const response = await fetch('https://dummyjson.com/auth/refresh', {
+                const response = await fetch(`${process.env.refreshURL}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -76,8 +77,8 @@ export default function Login() {
             loginToast();
             return
         }
-
-        const response = await fetch('https://dummyjson.com/auth/login', {
+        console.log(process.env.getTokenURL, "url")
+        const response = await fetch(`${process.env.getTokenURL}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -200,7 +201,7 @@ export default function Login() {
                         secureTextEntry={passwordShow}
                     />
                     <TouchableOpacity style={{width: 40, height: 40, alignSelf: 'center', justifyContent: 'center'}} onPress={()=>{togglePassword()}}>
-                        <Image source={passwordIcon[passwordShow]} style={{width: 30, height:30, alignSelf: 'center'}} />
+                        <Image source={passwordIcon[icon]} style={{width: 30, height:30, alignSelf: 'center'}} />
                     </TouchableOpacity>
                 </View>
 

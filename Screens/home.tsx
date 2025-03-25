@@ -1,6 +1,6 @@
 import "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState, useEffect, useRef, useId } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dimensions, Image, Modal, PermissionsAndroid, Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import GetLocation from "react-native-get-location";
 import WeatherSlide from "./WeatherSlides";
@@ -8,7 +8,7 @@ import Suggestions from "./suggestions";
 import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
 import Toast from "react-native-toast-message";
 
-export type WeatherData = {
+type WeatherData = {
   id: string,
   icon: string,
   latitude: number,
@@ -30,8 +30,6 @@ type backgroundColors = Record<string, string>;
 
 const Home = () => {
 
-  const API_KEY = "944e56c6401479371c1e394a4f0a1ecd";
-
   const navigation = useNavigation<any>();
 
   const [latitude, setLatitude] = useState<number>(0);
@@ -39,7 +37,7 @@ const Home = () => {
   const [text, setText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [backgroundcolor, setBackgroundColor] = useState("#87CEEB");
-  const weatherSliderRef = useRef<FlatList<any>>(null);
+  const weatherSliderRef = useRef<FlatList<any> | null>(null);
   const [visible, setVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("Today");
   const show = () => setVisible(true)
@@ -199,9 +197,9 @@ const Home = () => {
 
   const fetchWeatherData = async (city: string, latitude: number, longitude: number, filter: string, scroll?: boolean) => {
 
-    const url_Today = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
+    const url_Today = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.API_KEY}`;
 
-    const url_filter = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&cnt=${40}&appid=${API_KEY}`
+    const url_filter = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&cnt=${40}&appid=${process.env.API_KEY}`
 
     try {
       console.log('fetching');
@@ -289,7 +287,7 @@ const Home = () => {
 
   const fetchCityData = async (city: string) => {
     const limit = 1;
-    const city_url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=${limit}&appid=${API_KEY}`;
+    const city_url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=${limit}&appid=${process.env.API_KEY}`;
 
     try {
       const response = await fetch(city_url);

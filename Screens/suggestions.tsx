@@ -1,39 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { ReanimatedFlatList } from "react-native-reanimated/lib/typescript/component/FlatList";
 
 type locationData = {
     name: string,
     temp: string
   }
 
+type WeatherData = {
+    id: string,
+    icon: string,
+    latitude: number,
+    longitude: number,
+    description: string,
+    temp: string,
+    pressure: string,
+    humidity: string,
+    wind: string,
+    filter: string
+  };
+
 type sugggestionsProps = {
-    weatherData: any,
+    weatherData: WeatherData[],
     fetchCityData: React.Dispatch<string>
-    ref: React.RefObject<FlatList<any>>
+    ref: React.RefObject<ReanimatedFlatList<any> | null>
     locationData: locationData[]
     setLocationData: React.Dispatch<React.SetStateAction<Array<locationData>>>
 }
 
 const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData, ref }: sugggestionsProps) => {
 
-    const API_KEY = "944e56c6401479371c1e394a4f0a1ecd";
-
     useEffect(() => { fetchAllWeatherData(); }, []);
 
-    const detailsShow = (item) => {
+    const detailsShow = (item : locationData) => {
         fetchCityData(item.name);
         let name = item.name;
-        let index = weatherData.findIndex((item) => item.id == name)
+        let index = weatherData.findIndex((item: WeatherData) => item.id == name)
         if (index != -1) {
-            ref.current.scrollToIndex({ animated: true, index: index })
+            ref.current?.scrollToIndex({ animated: true, index: index })
         }
     };
 
     const fetchWeatherData = async (latitude: number, longitude: number) => {
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.API_KEY}`;
 
         try {
             const response = await fetch(url);
+
             const data = await response.json();
 
             return (data.main.temp - 273.15).toFixed(1)
@@ -45,7 +58,7 @@ const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData
 
     const fetchlocation = async (city: string) => {
         const limit = 1;
-        const city_url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=${limit}&appid=${API_KEY}`;
+        const city_url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=${limit}&appid=${process.env.API_KEY}`;
 
         try {
             const response = await fetch(city_url);
@@ -79,7 +92,7 @@ const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData
         setLocationData(updatedLocations);
     }
 
-    const renderItems = ({ item }) => {
+    const renderItems = ({ item }: {item: locationData}) => {
         return (
             <TouchableOpacity style={styles.container} onPress={() => { detailsShow(item); }}>
                 <Text style={styles.text}>{item.name}</Text>

@@ -20,7 +20,7 @@ export default function Profile() {
 
     const accessToken = await AsyncStorage.getItem("accessToken")
 
-    const userData = await fetch('https://dummyjson.com/user/me', {
+    const userData = await fetch(`${process.env.currentAuthURL}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -72,7 +72,7 @@ export default function Profile() {
     }
 
     try{
-      const response = await fetch('https://dummyjson.com/users/1', {
+      const response = await fetch(`${process.env.updateURL}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

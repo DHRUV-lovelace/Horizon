@@ -1,12 +1,38 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground, ImageSourcePropType } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, FlatList, ImageBackground, ImageSourcePropType, ViewabilityConfig } from "react-native";
 import { ReanimatedFlatList } from "react-native-reanimated/lib/typescript/component/FlatList";
 
+type ViewableItemsChangedInfo<T> = {
+  viewableItems: ViewToken<T>[];
+  changed: ViewToken<T>[];
+}
+
+type ViewToken<T> = {
+  item: T;
+  key: string;
+  index: number | null;
+  isViewable: boolean;
+  section?: any;
+}
+
+type WeatherData = {
+  id: string,
+  icon: string,
+  latitude: number,
+  longitude: number,
+  description: string,
+  temp: string,
+  pressure: string,
+  humidity: string,
+  wind: string,
+  filter: string
+};
+
 type weatherProps = {
-  weatherData: any,
+  weatherData: WeatherData[],
   setBackground: React.Dispatch<React.SetStateAction<string>>,
   backgroundColors: Record<string, string>,
-  ref: React.RefObject<ReanimatedFlatList<any>>
+  ref: React.RefObject<ReanimatedFlatList<any> | null>
 }
 
 type weatherIcons = Record<string, ImageSourcePropType>
@@ -34,7 +60,7 @@ const weatherIcons: weatherIcons = {
 
 const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: weatherProps) => {
 
-  const renderItems = ({ item }) => {
+  const renderItems = ({ item }: {item: WeatherData}) => {
 
     return (
       <View style={{ borderRadius: 30 }}>
@@ -70,7 +96,7 @@ const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: wea
     );
   };
 
-  const onViewableItemsChanged = ({ viewableItems }) => {
+  const onViewableItemsChanged = ({ viewableItems }: ViewableItemsChangedInfo<WeatherData>) => {
     if (viewableItems.length > 0) {
       const activeItem = viewableItems[0].item;
       const newBackground = backgroundColors[activeItem.icon] || "#000000";
