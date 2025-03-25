@@ -1,7 +1,8 @@
-import { Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 export default function Profile() {
 
@@ -9,44 +10,104 @@ export default function Profile() {
   const [email, setEmail] = useState("Email");
   const [name, setName] = useState("Name");
   const [age, setAge] = useState("Age");
+  const [emailu, setEmailu] = useState("Email");
+  const [nameu, setNameu] = useState("Name");
+  const [ageu, setAgeu] = useState("Age");
 
+  useEffect(() => { fetchUserData(); }, []);
 
-  useEffect(() => {fetchUserData();}, []);
-  
   const fetchUserData = async () => {
 
     const accessToken = await AsyncStorage.getItem("accessToken")
 
-
-    const userData = await fetch('https://dummyjson.com/user/me', {
-                            method: 'GET',
-                            headers: {
-                              'Authorization': `Bearer ${accessToken}`,
-                            },
-                            credentials: 'include'
-                          });
+    const userData = await fetch(`${process.env.currentAuthURL}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      credentials: 'include'
+    });
 
     const data = await userData.json();
 
-    if(data !== undefined){
-      try{
-          setEmail((data.email).toString())
-          setName((data.firstName).toString())
-          setAge((data.age).toString())
+    if (data !== undefined) {
+      console.log(data, "dummy")
+      try {
+        setEmail((data.email).toString())
+        setName((data.firstName).toString())
+        setAge((data.age).toString())
       }
-      catch(error){
-          console.error(error);
+      catch (error) {
+        console.error(error, "failed");
       }
-  }
+    }
   };
 
-  const saved = () => {
-    Navigation.navigate('home')
+  const saved = async() => {
+
+    let tempEmail;
+    let tempName;
+    let tempAge;
+
+    if(email === ""){
+      tempEmail = " "
+      setEmail(" ")
+    }
+    else{
+      tempEmail = email
+    }
+    if(name === ""){
+      tempName = " "
+      setName(" ")
+    }
+    else{
+      tempName = name
+    }
+    if(age === ""){
+      tempAge = " "
+      setAge(" ")
+    }
+    else{
+      tempAge = age
+    }
+
+    try{
+      const response = await fetch(`${process.env.updateURL}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: tempEmail,
+          firstName: tempName,
+          age: tempAge
+        })
+      });
+  
+      const data = await response.json()
+      console.log(data, "userdata")
+      setEmailu(data.email)
+      setNameu(data.firstName)
+      setAgeu((data.age).toString())
+
+      setEmail("")
+      setName("")
+      setAge("")
+  
+      Toast.show({
+        type: "success",
+        text1: "Updated successfully",
+      });
+    }
+    catch (error){
+      console.error("error occured while fetching updated data")
+      Toast.show({
+        type: "error",
+        text1: "updation failed"
+      });
+    }
   }
 
-  const logout = async() => {
-    await AsyncStorage.multiRemove(["accessToken", "refreshToken"])
-    stackclear();
+  const logout = async () => {
+    Alert.alert('Logout', 'you sure to logout?', [{text: 'No', style: 'cancel'}, {text: 'Yes', onPress: async() => {await AsyncStorage.multiRemove(["accessToken", "refreshToken"]); stackclear();}}])
   };
 
   const stackclear = () => {
@@ -60,50 +121,54 @@ export default function Profile() {
 
 
   return (
-    <View style={styles.container}>
-
-      <Image source={require('../assets/images/profile.png')} style={styles.logo}/>
-
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder='Email'
-          placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
-          value={email}
+    <KeyboardAvoidingView style={{flex: 1, backgroundColor: '#888AB9',}} behavior='padding' keyboardVerticalOffset={50}>
+      <ScrollView style={[styles.container]} contentContainerStyle={{alignItems: 'center'}}>
+        <Image source={require('../assets/images/profile.png')} style={styles.logo} />
+        <Toast />
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder={emailu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25}}
+            value={email}
+            onChangeText={(text)=> setEmail(text)}
           />
-      </View>
+        </View>
 
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder='Name'
-          placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
-          value={name}
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder= {nameu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+            value={name}
+            onChangeText={(text)=> setName(text)}
           />
-      </View>
+        </View>
 
-      <View style={styles.textinput}>
-        <TextInput
-          placeholder='Age'
-          placeholderTextColor='black'
-          style = {{height: '100%', fontSize: 18, paddingLeft: 25}}
-          value={age}
+        <View style={styles.textinput}>
+          <TextInput
+            placeholder={ageu}
+            placeholderTextColor='black'
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
+            value={age}
+            onChangeText={(text)=> setAge(text)}
           />
-      </View>
-      
-      <View style={styles.containerrow}>
-        <TouchableOpacity style={[styles.button, {backgroundColor: "#17B169"}]} onPress={()=> saved()}>
-          <Text style={styles.text}>Save</Text>
-        </TouchableOpacity>
+        </View>
 
-        <View style={styles.spacer}></View>
+        <View style={[styles.containerrow, {marginTop: 100}]}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: "#17B169" }]} onPress={() => saved()}>
+            <Text style={styles.text}>Save</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, {backgroundColor: "#E32636"}]} onPress={()=> logout()}>
-          <Text style={styles.text}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-      
-    </View>
+          <View style={styles.spacer}></View>
+
+          <TouchableOpacity style={[styles.button, { backgroundColor: "#E32636" }]} onPress={() => logout()}>
+            <Text style={styles.text}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -112,8 +177,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#888AB9',
-    alignItems: 'center',
   },
 
   containerrow: {
@@ -148,17 +211,20 @@ const styles = StyleSheet.create({
 
   button: {
     width: '35%',
-    height:50,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 25,
-    marginTop: 100,
-    elevation: 30
   },
 
   text: {
     color: "black",
     fontSize: 20,
     letterSpacing: 2
+  },
+  modal: {
+    width: '50%',
+    height: 100,
+    backgroundColor: "#000000"
   }
 });

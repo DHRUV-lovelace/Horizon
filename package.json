@@ -17,8 +17,10 @@
     "react": "19.0.0",
     "react-native": "0.78.0",
     "react-native-get-location": "^5.0.0",
+    "react-native-reanimated": "^3.17.1",
     "react-native-safe-area-context": "^5.3.0",
     "react-native-screens": "^4.9.2",
+    "react-native-svg": "^15.11.2",
     "react-native-toast-message": "^2.2.1"
   },
   "devDependencies": {
@@ -38,6 +40,7 @@
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
+    "react-native-dotenv": "^3.4.11",
     "react-test-renderer": "19.0.0",
     "typescript": "5.0.4"
   },
