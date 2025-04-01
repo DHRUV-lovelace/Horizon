@@ -60,8 +60,7 @@ const weatherIcons: weatherIcons = {
 
 const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: weatherProps) => {
 
-  const renderItems = ({ item }: {item: WeatherData}) => {
-
+  const renderItems = ({ item }: { item: WeatherData }) => {
     return (
       <View style={{ borderRadius: 30 }}>
         <ImageBackground blurRadius={40}>
@@ -107,9 +106,8 @@ const WeatherSlide = ({ weatherData, setBackground, backgroundColors, ref }: wea
   const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
 
   return (
-
     <FlatList
-      style={{ alignSelf: "center"}}
+      style={{ alignSelf: "center" }}
       ref={ref}
       data={weatherData}
       renderItem={renderItems}
@@ -179,7 +177,6 @@ const styles = StyleSheet.create({
   blur: {
     borderRadius: 40,
   }
-}
-);
+});
 
 export default WeatherSlide;

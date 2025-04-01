@@ -3,12 +3,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useAppDispatch } from '../redux/hooks'
+import { getLogin } from '../redux/slices/loginUserSlice'
 
 export default function Login() {
 
     const Navigation = useNavigation<any>();
 
     const passwordRef = useRef<TextInput>(null);
+
+    const dispatch = useAppDispatch();
 
     const [userName, setUserName] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -73,34 +77,25 @@ export default function Login() {
 
     const loginUser = async () => {
 
-        if (userName === "" || password === ""){
+        if (userName === "" || password === "") {
             loginToast();
             return
         }
-        console.log(process.env.getTokenURL, "url")
-        const response = await fetch(`${process.env.getTokenURL}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: (userName).toLowerCase(),
-                password: (password).toLowerCase(),
-                expiresInMins: 30,
-            }),
-            credentials: 'include'
-        });
 
-        const data = await response.json();
+        const data = await dispatch(getLogin({ userName, password }));
         console.log(data, "logindata")
 
-        if (data.message){
-            loginToast(false)
-            return
+        if (data?.payload?.status == true) {
+            if (data.payload.message) {
+                loginToast(false)
+                return
+            }
         }
 
-        const accesstoken = (data.accessToken).toString()
-        const refreshtoken = (data.refreshToken).toString()
+        const accesstoken = (data.payload.accessToken).toString()
+        const refreshtoken = (data.payload.refreshToken).toString()
 
-        if (data.accessToken !== undefined) {
+        if (data.payload.accessToken !== undefined) {
             try {
                 await AsyncStorage.setItem('accessToken', accesstoken);
             }
@@ -109,7 +104,7 @@ export default function Login() {
             }
         }
 
-        if (data.refreshToken !== undefined) {
+        if (data.payload.refreshToken !== undefined) {
             try {
                 await AsyncStorage.setItem('refreshToken', refreshtoken);
             }
@@ -118,11 +113,11 @@ export default function Login() {
             }
         }
 
-        if (data.accessToken !== undefined) {
+        if (data.payload.accessToken !== undefined) {
             loginToast(true);
             homeNav();
         }
-        else if (data === Object) {
+        else if (data.payload === Object) {
             loginToast(false);
         }
     };
@@ -159,18 +154,20 @@ export default function Login() {
     };
 
     const togglePassword = () => {
-        if (passwordShow){
+        if (passwordShow) {
             setPasswordShow(false)
+            setIcon(0)
         }
-        else{
+        else {
             setPasswordShow(true)
+            setIcon(1)
         }
     };
 
     return (
         <KeyboardAvoidingView style={styles.container} behavior='padding' keyboardVerticalOffset={20}>
-            
-            <ScrollView style={{flex: 1}} contentContainerStyle={{alignItems: 'center'}}>
+
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ alignItems: 'center' }}>
 
                 <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
@@ -180,7 +177,7 @@ export default function Login() {
                     <TextInput
                         placeholder='Enter username'
                         placeholderTextColor={'black'}
-                        style={{ height: '100%', fontSize: 18, paddingLeft: 25, paddingRight: 25}}
+                        style={{ height: '100%', fontSize: 18, paddingLeft: 25, paddingRight: 25 }}
                         value={userName}
                         onChangeText={(text) => setUserName(text)}
                         onSubmitEditing={changeFocus}
@@ -189,28 +186,28 @@ export default function Login() {
                     />
                 </View>
 
-                <View style={[styles.textinput, {flexDirection: 'row'}]}>
+                <View style={[styles.textinput, { flexDirection: 'row' }]}>
                     <TextInput
                         ref={passwordRef}
                         placeholder='Enter password'
                         placeholderTextColor={'black'}
-                        style={{ width: "86%", height: '100%', fontSize: 18, paddingLeft: 25, color: "#000000", paddingRight: 25}}
+                        style={{ width: "86%", height: '100%', fontSize: 18, paddingLeft: 25, color: "#000000", paddingRight: 25 }}
                         value={password}
                         onChangeText={(text) => setPassword(text)}
                         maxLength={10}
                         secureTextEntry={passwordShow}
                     />
-                    <TouchableOpacity style={{width: 40, height: 40, alignSelf: 'center', justifyContent: 'center'}} onPress={()=>{togglePassword()}}>
-                        <Image source={passwordIcon[icon]} style={{width: 30, height:30, alignSelf: 'center'}} />
+                    <TouchableOpacity style={{ width: 40, height: 40, alignSelf: 'center', justifyContent: 'center' }} onPress={() => { togglePassword() }}>
+                        <Image source={passwordIcon[icon]} style={{ width: 30, height: 30, alignSelf: 'center' }} />
                     </TouchableOpacity>
                 </View>
 
-                <View style={{flexDirection: 'row', marginTop: 100, borderRadius: 0}}>
+                <View style={{ flexDirection: 'row', marginTop: 100, borderRadius: 0 }}>
                     <View style={styles.loginView}>
-                        <Pressable style={styles.login}  onPress={loginUser} android_ripple={{color: "#f3e3f3"}}>
-                            <Text style={{ color: 'black', fontSize: 25}}>Login</Text>
+                        <Pressable style={styles.login} onPress={loginUser} android_ripple={{ color: "#f3e3f3" }}>
+                            <Text style={{ color: 'black', fontSize: 25 }}>Login</Text>
                         </Pressable>
-                    </View> 
+                    </View>
                 </View>
 
             </ScrollView>

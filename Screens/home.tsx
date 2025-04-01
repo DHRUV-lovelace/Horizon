@@ -7,6 +7,10 @@ import WeatherSlide from "./WeatherSlides";
 import Suggestions from "./suggestions";
 import { FlatList } from "react-native-reanimated/lib/typescript/Animated";
 import Toast from "react-native-toast-message";
+import { useAppDispatch } from "../redux/hooks";
+import { getCurrentWeather } from "../redux/slices/currentWeatherSlice";
+import { getforecastWeather } from "../redux/slices/forecastWeatherSlice";
+import { getLocation } from "../redux/slices/fetchLocationSlice";
 
 type WeatherData = {
   id: string,
@@ -32,8 +36,8 @@ const Home = () => {
 
   const navigation = useNavigation<any>();
 
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
+  const dispatch = useAppDispatch();
+
   const [text, setText] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [backgroundcolor, setBackgroundColor] = useState("#87CEEB");
@@ -42,6 +46,7 @@ const Home = () => {
   const [selectedFilter, setSelectedFilter] = useState("Today");
   const show = () => setVisible(true)
   const hide = () => setVisible(false)
+
   const [weatherData, setWeatherData] = useState<WeatherData[]>([
     {
       id: "Current",
@@ -78,7 +83,6 @@ const Home = () => {
       temp: "_ _",
     },
   ]);
-
   const backgroundColors: backgroundColors = {
     "01d": "#00ABFF",
     "02d": "#87CEFA",
@@ -133,8 +137,6 @@ const Home = () => {
     console.log("temp", location);
     if (location) {
       console.log('fetch');
-      setLongitude(location.latitude);
-      setLatitude(location.longitude);
       fetchWeatherData("Current", location.latitude, location.longitude, "Today");
     }
   };
@@ -155,7 +157,6 @@ const Home = () => {
   };
 
   const findForcast = (data: object, filter: string) => {
-
     const tomorrow = 86400
     const day2 = 172800
     const day3 = 259200
@@ -196,62 +197,36 @@ const Home = () => {
   }
 
   const fetchWeatherData = async (city: string, latitude: number, longitude: number, filter: string, scroll?: boolean) => {
-
-    const url_Today = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.API_KEY}`;
-
-    const url_filter = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&cnt=${40}&appid=${process.env.API_KEY}`
-
     try {
       console.log('fetching');
 
-      let response: Response;
+      let data;
 
       if (filter === "Today") {
-        response = await fetch(url_Today);
-      }
-      else {
-        response = await fetch(url_filter);
-      }
-
-      const data = await response.json();
-
-      if (filter === "Today") {
-        console.log(createWeatherObject(data, city, latitude, longitude, filter), "createobject", filter)
-        updateWeatherData(createWeatherObject(data, city, latitude, longitude, filter), scroll)
-        if (city === "Current") {
-          const newBackground = backgroundColors[data.weather[0].icon]
-          setBackgroundColor(newBackground)
-        }
+        const wholeData = await dispatch(getCurrentWeather({ latitude, longitude }))
+        data = wholeData.payload
       }
       else if (filter === "Tomorrow") {
-
-        const filteredData = data.list[findForcast(data.list, filter)]
-        updateWeatherData(createWeatherObject(filteredData, city, latitude, longitude, filter), scroll)
-        if (city === "Current") {
-          const newBackground = backgroundColors[filteredData.weather[0].icon]
-          setBackgroundColor(newBackground)
-        }
-
+        const unfilteredata = await dispatch(getforecastWeather({ latitude, longitude }))
+        data = unfilteredata.payload.list[findForcast(unfilteredata.payload.list, filter)]
       }
       else if (filter === "Day 2") {
-
-        const filteredData = data.list[findForcast(data.list, filter)]
-        updateWeatherData(createWeatherObject(filteredData, city, latitude, longitude, filter), scroll)
-        if (city === "Current") {
-          const newBackground = backgroundColors[filteredData.weather[0].icon]
-          setBackgroundColor(newBackground)
-        }
-
+        const unfilteredata = await dispatch(getforecastWeather({ latitude, longitude }))
+        data = unfilteredata.payload.list[findForcast(unfilteredata.payload.list, filter)]
       }
+
       else if (filter === "Day 3") {
+        const unfilteredata = await dispatch(getforecastWeather({ latitude, longitude }))
+        data = unfilteredata.payload.list[findForcast(unfilteredata.payload.list, filter)]
+      }
+      else {
+        console.log("error fetching in data")
+      }
 
-        const filteredData = data.list[findForcast(data.list, filter)]
-        updateWeatherData(createWeatherObject(filteredData, city, latitude, longitude, filter), scroll)
-        if (city === "Current") {
-          const newBackground = backgroundColors[filteredData.weather[0].icon]
-          setBackgroundColor(newBackground)
-        }
-
+      updateWeatherData(createWeatherObject(data, city, latitude, longitude, filter), scroll)
+      if (city === "Current") {
+        const newBackground = backgroundColors[data.weather[0].icon]
+        setBackgroundColor(newBackground)
       }
     }
     catch (error) {
@@ -286,26 +261,20 @@ const Home = () => {
   }
 
   const fetchCityData = async (city: string) => {
-    const limit = 1;
-    const city_url = `http://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=${limit}&appid=${process.env.API_KEY}`;
-
     try {
-      const response = await fetch(city_url);
-      const data = await response.json();
+      const data = await dispatch(getLocation(city))
       console.log(data, "location");
 
-      if (data.length > 0) {
-        const lat = data[0].lat;
-        const lon = data[0].lon;
-        setLatitude(data[0].lat);
-        setLongitude(data[0].lon);
+      if (data.payload.length > 0) {
+        const lat = data.payload[0].lat;
+        const lon = data.payload[0].lon;
 
         fetchWeatherData(city, lat, lon, "Today", true);
       }
-      else{
+      else {
         Toast.show({
           type: "error",
-          text1: "Enter a valid location name" 
+          text1: "Enter a valid location name"
         })
         return
       }
@@ -316,7 +285,6 @@ const Home = () => {
   };
 
   const onRefresh = async () => {
-
     setRefreshing(true);
     await Promise.all(
       weatherData.map(async (item) => {
@@ -381,7 +349,7 @@ const Home = () => {
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
       {/* main conatiner containing all other containers*/}
       <View style={[styles.container, { backgroundColor: `${backgroundcolor}` }]}>
@@ -412,7 +380,7 @@ const Home = () => {
           </View>
 
           <Modal visible={visible} animationType='fade' onRequestClose={hide} transparent>
-            <TouchableOpacity style={{flex: 1}} activeOpacity={1} onPressOut={() => hide()}>
+            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPressOut={() => hide()}>
               <View style={styles.modal}>
                 <TouchableOpacity style={[styles.button, selectedFilter === "Today" && styles.selectedButton]} onPress={() => applyfilter("Today")}>
                   <Text style={[styles.modalText, selectedFilter === "Today" && styles.selectedText]}>Today</Text>
@@ -432,10 +400,10 @@ const Home = () => {
               </View>
             </TouchableOpacity>
           </Modal>
-          
-          <Text style={{color: "#ffffff", fontSize: 35, alignSelf: 'center', fontWeight: '400', marginTop: 7}}>{selectedFilter}</Text>
 
-          <View style={{ width: Dimensions.get("screen").width, marginTop: 10}}>
+          <Text style={{ color: "#ffffff", fontSize: 35, alignSelf: 'center', fontWeight: '400', marginTop: 7 }}>{selectedFilter}</Text>
+
+          <View style={{ width: Dimensions.get("screen").width, marginTop: 10 }}>
             <WeatherSlide weatherData={weatherData} setBackground={setBackgroundColor} backgroundColors={backgroundColors} ref={weatherSliderRef} />
           </View>
 
@@ -444,7 +412,7 @@ const Home = () => {
         </View>
 
       </View>
-      <Toast/>
+      <Toast />
     </ScrollView>
   );
 };
@@ -497,21 +465,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 5
   },
-    selectedButton: {
-      width: 160,
-      height: 50,
-      justifyContent: 'center',
-      borderBottomWidth: 0.5,
-      borderBottomColor: "grey",
-      backgroundColor: "#229ac8",
-      borderRadius: 20
-    },
-    selectedText: {
-      fontSize: 22,
-      marginStart: 10,
-      color: 'white',
-      elevation: 10
-    },
+  selectedButton: {
+    width: 160,
+    height: 50,
+    justifyContent: 'center',
+    borderBottomWidth: 0.5,
+    borderBottomColor: "grey",
+    backgroundColor: "#229ac8",
+    borderRadius: 20
+  },
+  selectedText: {
+    fontSize: 22,
+    marginStart: 10,
+    color: 'white',
+    elevation: 10
+  },
   modal: {
     backgroundColor: "#ffffff",
     width: 170,

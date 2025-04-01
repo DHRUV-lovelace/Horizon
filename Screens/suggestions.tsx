@@ -5,7 +5,7 @@ import { ReanimatedFlatList } from "react-native-reanimated/lib/typescript/compo
 type locationData = {
     name: string,
     temp: string
-  }
+}
 
 type WeatherData = {
     id: string,
@@ -18,7 +18,7 @@ type WeatherData = {
     humidity: string,
     wind: string,
     filter: string
-  };
+};
 
 type sugggestionsProps = {
     weatherData: WeatherData[],
@@ -32,7 +32,7 @@ const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData
 
     useEffect(() => { fetchAllWeatherData(); }, []);
 
-    const detailsShow = (item : locationData) => {
+    const detailsShow = (item: locationData) => {
         fetchCityData(item.name);
         let name = item.name;
         let index = weatherData.findIndex((item: WeatherData) => item.id == name)
@@ -92,7 +92,7 @@ const Suggestions = ({ weatherData, fetchCityData, locationData, setLocationData
         setLocationData(updatedLocations);
     }
 
-    const renderItems = ({ item }: {item: locationData}) => {
+    const renderItems = ({ item }: { item: locationData }) => {
         return (
             <TouchableOpacity style={styles.container} onPress={() => { detailsShow(item); }}>
                 <Text style={styles.text}>{item.name}</Text>

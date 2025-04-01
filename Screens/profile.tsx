@@ -43,35 +43,35 @@ export default function Profile() {
     }
   };
 
-  const saved = async() => {
+  const saved = async () => {
 
     let tempEmail;
     let tempName;
     let tempAge;
 
-    if(email === ""){
+    if (email === "") {
       tempEmail = " "
       setEmail(" ")
     }
-    else{
+    else {
       tempEmail = email
     }
-    if(name === ""){
+    if (name === "") {
       tempName = " "
       setName(" ")
     }
-    else{
+    else {
       tempName = name
     }
-    if(age === ""){
+    if (age === "") {
       tempAge = " "
       setAge(" ")
     }
-    else{
+    else {
       tempAge = age
     }
 
-    try{
+    try {
       const response = await fetch(`${process.env.updateURL}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +81,7 @@ export default function Profile() {
           age: tempAge
         })
       });
-  
+
       const data = await response.json()
       console.log(data, "userdata")
       setEmailu(data.email)
@@ -91,13 +91,13 @@ export default function Profile() {
       setEmail("")
       setName("")
       setAge("")
-  
+
       Toast.show({
         type: "success",
         text1: "Updated successfully",
       });
     }
-    catch (error){
+    catch (error) {
       console.error("error occured while fetching updated data")
       Toast.show({
         type: "error",
@@ -107,7 +107,7 @@ export default function Profile() {
   }
 
   const logout = async () => {
-    Alert.alert('Logout', 'you sure to logout?', [{text: 'No', style: 'cancel'}, {text: 'Yes', onPress: async() => {await AsyncStorage.multiRemove(["accessToken", "refreshToken"]); stackclear();}}])
+    Alert.alert('Logout', 'you sure to logout?', [{ text: 'No', style: 'cancel' }, { text: 'Yes', onPress: async () => { await AsyncStorage.multiRemove(["accessToken", "refreshToken"]); stackclear(); } }])
   };
 
   const stackclear = () => {
@@ -121,27 +121,27 @@ export default function Profile() {
 
 
   return (
-    <KeyboardAvoidingView style={{flex: 1, backgroundColor: '#888AB9',}} behavior='padding' keyboardVerticalOffset={50}>
-      <ScrollView style={[styles.container]} contentContainerStyle={{alignItems: 'center'}}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#888AB9', }} behavior='padding' keyboardVerticalOffset={50}>
+      <ScrollView style={[styles.container]} contentContainerStyle={{ alignItems: 'center' }}>
         <Image source={require('../assets/images/profile.png')} style={styles.logo} />
         <Toast />
         <View style={styles.textinput}>
           <TextInput
             placeholder={emailu}
             placeholderTextColor='black'
-            style={{ height: '100%', fontSize: 18, paddingLeft: 25}}
+            style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
             value={email}
-            onChangeText={(text)=> setEmail(text)}
+            onChangeText={(text) => setEmail(text)}
           />
         </View>
 
         <View style={styles.textinput}>
           <TextInput
-            placeholder= {nameu}
+            placeholder={nameu}
             placeholderTextColor='black'
             style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
             value={name}
-            onChangeText={(text)=> setName(text)}
+            onChangeText={(text) => setName(text)}
           />
         </View>
 
@@ -151,11 +151,11 @@ export default function Profile() {
             placeholderTextColor='black'
             style={{ height: '100%', fontSize: 18, paddingLeft: 25 }}
             value={age}
-            onChangeText={(text)=> setAge(text)}
+            onChangeText={(text) => setAge(text)}
           />
         </View>
 
-        <View style={[styles.containerrow, {marginTop: 100}]}>
+        <View style={[styles.containerrow, { marginTop: 100 }]}>
           <TouchableOpacity style={[styles.button, { backgroundColor: "#17B169" }]} onPress={() => saved()}>
             <Text style={styles.text}>Save</Text>
           </TouchableOpacity>
